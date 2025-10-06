@@ -1,0 +1,456 @@
+openapi: 3.0.3
+info:
+  title: Manager Mindset Feedback Tool API
+  description: API for collecting and viewing leadership mindset feedback
+  version: 1.0.0
+  contact:
+    name: Developer Customiser Team
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+  - url: https://api.example.com
+    description: Production server (placeholder)
+
+tags:
+  - name: Profiles
+    description: Profile management operations
+  - name: Feedback
+    description: Feedback submission and retrieval
+  - name: Configuration
+    description: Application configuration
+
+paths:
+  /api/profiles:
+    post:
+      summary: Create a new manager profile
+      description: Creates a new profile without authentication (FR-001, FR-002)
+      operationId: createProfile
+      tags:
+        - Profiles
+      responses:
+        '201':
+          description: Profile created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - feedbackLinkId
+                  - adminLinkId
+                  - createdAt
+                properties:
+                  feedbackLinkId:
+                    type: string
+                    format: uuid
+                    description: Public link ID for colleagues to submit feedback
+                    example: "f_a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                  adminLinkId:
+                    type: string
+                    format: uuid
+                    description: Private link ID for manager to view results
+                    example: "a_9876fedc-ba09-8765-4321-0fedcba98765"
+                  createdAt:
+                    type: string
+                    format: date-time
+                    description: Profile creation timestamp
+                    example: "2025-10-06T10:30:00.000Z"
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/profiles/{feedbackLinkId}:
+    get:
+      summary: Get profile metadata for feedback form
+      description: Retrieves profile information for displaying feedback form (FR-003)
+      operationId: getProfile
+      tags:
+        - Profiles
+      parameters:
+        - name: feedbackLinkId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Public feedback link identifier
+      responses:
+        '200':
+          description: Profile metadata retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - feedbackLinkId
+                  - createdAt
+                properties:
+                  feedbackLinkId:
+                    type: string
+                    example: "f_a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                  createdAt:
+                    type: string
+                    format: date-time
+                    example: "2025-10-06T10:30:00.000Z"
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/profiles/{feedbackLinkId}/responses:
+    post:
+      summary: Submit colleague feedback
+      description: Submit or update feedback response for a profile (FR-006, FR-013)
+      operationId: submitFeedback
+      tags:
+        - Feedback
+      parameters:
+        - name: feedbackLinkId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Public feedback link identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - respondentId
+                - traits
+              properties:
+                respondentId:
+                  type: string
+                  description: Unique identifier for colleague (browser fingerprint or UUID)
+                  example: "fp_abc123xyz"
+                respondentName:
+                  type: string
+                  description: Optional display name (defaults to "Anonymous")
+                  minLength: 1
+                  maxLength: 100
+                  example: "Jane Doe"
+                traits:
+                  type: array
+                  description: Array of trait ratings (FR-004, FR-005)
+                  minItems: 4
+                  maxItems: 10
+                  items:
+                    $ref: '#/components/schemas/TraitRating'
+            example:
+              respondentId: "fp_abc123xyz"
+              respondentName: "Jane Doe"
+              traits:
+                - traitId: "risk_taking"
+                  value: 4
+                - traitId: "goofy_professional"
+                  value: 2
+                - traitId: "candid_diplomatic"
+                  value: 5
+                - traitId: "leadership_ic"
+                  value: 3
+      responses:
+        '200':
+          description: Feedback submitted successfully (FR-007)
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                  - submittedAt
+                properties:
+                  message:
+                    type: string
+                    example: "Feedback submitted successfully"
+                  submittedAt:
+                    type: string
+                    format: date-time
+                    example: "2025-10-06T14:30:00.000Z"
+        '400':
+          description: Invalid request (missing traits, invalid values)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "All trait ratings must be provided with values 1-5"
+                code: "INVALID_TRAITS"
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/profiles/{feedbackLinkId}/aggregate:
+    get:
+      summary: Get aggregate results
+      description: Retrieves aggregate statistics for success screen radar chart (FR-008, FR-009)
+      operationId: getAggregateResults
+      tags:
+        - Feedback
+      parameters:
+        - name: feedbackLinkId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Public feedback link identifier
+      responses:
+        '200':
+          description: Aggregate results retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AggregateResults'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/profiles/{adminLinkId}/results:
+    get:
+      summary: Get manager results dashboard
+      description: Retrieves both aggregate and individual responses for manager view (FR-011, FR-014)
+      operationId: getManagerResults
+      tags:
+        - Profiles
+      parameters:
+        - name: adminLinkId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Private admin link identifier
+      responses:
+        '200':
+          description: Manager results retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - adminLinkId
+                  - createdAt
+                  - totalResponses
+                  - responses
+                  - aggregates
+                properties:
+                  adminLinkId:
+                    type: string
+                    example: "a_9876fedc-ba09-8765-4321-0fedcba98765"
+                  createdAt:
+                    type: string
+                    format: date-time
+                    example: "2025-10-06T10:30:00.000Z"
+                  totalResponses:
+                    type: integer
+                    description: Total number of feedback responses
+                    example: 5
+                  responses:
+                    type: array
+                    description: Individual feedback responses (FR-015)
+                    items:
+                      $ref: '#/components/schemas/FeedbackResponse'
+                  aggregates:
+                    type: array
+                    description: Aggregate statistics per trait
+                    items:
+                      $ref: '#/components/schemas/TraitAggregate'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/traits:
+    get:
+      summary: Get trait questions configuration
+      description: Retrieves the list of trait questions for display (FR-010)
+      operationId: getTraits
+      tags:
+        - Configuration
+      responses:
+        '200':
+          description: Trait questions retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TraitQuestion'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+components:
+  schemas:
+    TraitQuestion:
+      type: object
+      required:
+        - traitId
+        - label
+        - leftLabel
+        - rightLabel
+        - order
+      properties:
+        traitId:
+          type: string
+          description: Unique identifier (snake_case)
+          pattern: '^[a-z_]+$'
+          example: "risk_taking"
+        label:
+          type: string
+          description: Full trait label
+          minLength: 1
+          maxLength: 100
+          example: "Takes on risk vs. Risk averse"
+        leftLabel:
+          type: string
+          description: Label for value 1
+          minLength: 1
+          maxLength: 50
+          example: "Takes on risk"
+        rightLabel:
+          type: string
+          description: Label for value 5
+          minLength: 1
+          maxLength: 50
+          example: "Risk averse"
+        order:
+          type: integer
+          description: Display order (0-based)
+          minimum: 0
+          example: 0
+
+    TraitRating:
+      type: object
+      required:
+        - traitId
+        - value
+      properties:
+        traitId:
+          type: string
+          description: Reference to TraitQuestion ID
+          example: "risk_taking"
+        value:
+          type: integer
+          description: Rating value
+          minimum: 1
+          maximum: 5
+          example: 4
+
+    FeedbackResponse:
+      type: object
+      required:
+        - respondentId
+        - respondentName
+        - submittedAt
+        - traits
+      properties:
+        respondentId:
+          type: string
+          description: Unique identifier for colleague
+          example: "fp_abc123xyz"
+        respondentName:
+          type: string
+          description: Display name
+          example: "Jane Doe"
+        submittedAt:
+          type: string
+          format: date-time
+          description: Submission timestamp
+          example: "2025-10-06T14:30:00.000Z"
+        traits:
+          type: array
+          description: Array of trait ratings
+          items:
+            $ref: '#/components/schemas/TraitRating'
+
+    TraitAggregate:
+      type: object
+      required:
+        - traitId
+        - average
+        - count
+        - values
+      properties:
+        traitId:
+          type: string
+          description: Trait identifier
+          example: "risk_taking"
+        average:
+          type: number
+          format: float
+          description: Mean of all values (1.0-5.0)
+          minimum: 1.0
+          maximum: 5.0
+          example: 3.6
+        count:
+          type: integer
+          description: Number of responses
+          minimum: 0
+          example: 5
+        values:
+          type: array
+          description: Distribution [count of 1s, 2s, 3s, 4s, 5s]
+          items:
+            type: integer
+            minimum: 0
+          minItems: 5
+          maxItems: 5
+          example: [0, 1, 1, 2, 1]
+
+    AggregateResults:
+      type: object
+      required:
+        - profileId
+        - totalResponses
+        - aggregates
+      properties:
+        profileId:
+          type: string
+          description: Feedback link ID
+          example: "f_a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+        totalResponses:
+          type: integer
+          description: Total number of responses
+          minimum: 0
+          example: 5
+        aggregates:
+          type: array
+          description: Aggregate statistics per trait
+          items:
+            $ref: '#/components/schemas/TraitAggregate'
+
+    Error:
+      type: object
+      required:
+        - error
+        - code
+      properties:
+        error:
+          type: string
+          description: Human-readable error message
+          example: "Profile not found"
+        code:
+          type: string
+          description: Machine-readable error code
+          example: "PROFILE_NOT_FOUND"
+
+  responses:
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Profile not found"
+            code: "PROFILE_NOT_FOUND"
+
+    ServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "An unexpected error occurred"
+            code: "INTERNAL_SERVER_ERROR"

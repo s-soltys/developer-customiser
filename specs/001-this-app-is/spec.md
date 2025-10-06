@@ -73,7 +73,7 @@ A manager in a tech company wants to gather feedback from colleagues about their
 4. **Given** a colleague has filled out all four ratings, **When** they submit the form, **Then** their responses are recorded and they see a success confirmation
 5. **Given** a colleague has just submitted feedback, **When** viewing the success screen, **Then** they see aggregate results from all respondents displayed as a radar chart
 6. **Given** multiple colleagues have submitted responses for a profile, **When** any colleague submits feedback, **Then** the radar chart reflects the combined data from all submissions
-7. **Given** a manager wants to share their profile, **When** they access their feedback link, **Then** they can copy/share the link via [NEEDS CLARIFICATION: sharing mechanism - clipboard, social media buttons, QR code?]
+7. **Given** a manager wants to share their profile, **When** they access their feedback link, **Then** they can copy/share the link via clipboard
 
 ### Edge Cases
 - What happens when a colleague tries to submit with incomplete ratings (not all 1-5 values selected)?
@@ -93,7 +93,7 @@ A manager in a tech company wants to gather feedback from colleagues about their
   - Candid vs. Diplomatic
   - Focused on leadership vs. Focused on individual contribution
 - **FR-004**: System MUST provide a 1-5 rating scale (spinner control) for each trait question
-- **FR-005**: System MUST prevent submission unless all four ratings are selected [NEEDS CLARIFICATION: or should partial submissions be allowed?]
+- **FR-005**: System MUST prevent submission unless all four ratings are selected
 - **FR-006**: System MUST save colleague feedback responses when submitted
 - **FR-007**: System MUST display a success confirmation screen after successful submission
 - **FR-008**: System MUST display aggregate results as a radar chart on the success screen
