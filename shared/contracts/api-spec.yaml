@@ -1,0 +1,362 @@
+openapi: 3.0.3
+info:
+  title: How to Work With Me API
+  description: REST API for creating and sharing "How to Work With Me" profiles
+  version: 1.0.0
+  contact:
+    name: API Support
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+
+tags:
+  - name: profiles
+    description: Profile creation, retrieval, and updates
+  - name: questions
+    description: Question template retrieval
+
+paths:
+  /api/questions:
+    get:
+      summary: Get all question templates
+      description: Returns all questions organized by category for rendering the questionnaire
+      operationId: getQuestions
+      tags:
+        - questions
+      responses:
+        '200':
+          description: List of all question templates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Question'
+              example:
+                - id: "507f1f77bcf86cd799439021"
+                  categoryId: "communication"
+                  questionId: "preferred-channel"
+                  text: "What's your preferred communication channel?"
+                  type: "CHOICE"
+                  choices: ["Slack", "Email", "Video call", "In-person", "Mix"]
+                  order: 0
+                - id: "507f1f77bcf86cd799439022"
+                  categoryId: "communication"
+                  questionId: "response-time"
+                  text: "What are your typical response time expectations?"
+                  type: "TEXT"
+                  placeholder: "e.g., Within 24 hours"
+                  order: 1
+
+  /api/profiles:
+    post:
+      summary: Create a new profile
+      description: Creates a new profile with the user's name. Returns profile ID and shareable link ID.
+      operationId: createProfile
+      tags:
+        - profiles
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProfileRequest'
+            example:
+              name: "Alex Chen"
+      responses:
+        '201':
+          description: Profile created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+              example:
+                id: "507f1f77bcf86cd799439011"
+                name: "Alex Chen"
+                shareableId: "a3f2c5d8-9b1e-4f7a-8c2d-1e3b4f5a6b7c"
+                createdAt: "2025-10-06T10:30:00Z"
+                updatedAt: "2025-10-06T10:30:00Z"
+                responses: {}
+        '400':
+          description: Invalid request (e.g., empty name)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Name cannot be empty"
+
+  /api/profiles/{id}:
+    get:
+      summary: Get profile by ID
+      description: Retrieves a profile by its database ID (for editing own profile)
+      operationId: getProfileById
+      tags:
+        - profiles
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: MongoDB ObjectId of the profile
+      responses:
+        '200':
+          description: Profile found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+        '404':
+          description: Profile not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Profile not found"
+
+    put:
+      summary: Update profile responses
+      description: Updates the responses for a profile. Can be called multiple times (editing).
+      operationId: updateProfile
+      tags:
+        - profiles
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: MongoDB ObjectId of the profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProfileRequest'
+            example:
+              responses:
+                communication:
+                  preferred-channel:
+                    value: "Slack"
+                    answeredAt: "2025-10-06T10:31:00Z"
+                  response-time:
+                    value: "Within 2 hours during work hours"
+                    answeredAt: "2025-10-06T10:32:00Z"
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+        '400':
+          description: Invalid request (e.g., unknown question ID, type mismatch)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Question 'unknown-question' not found in category 'communication'"
+        '404':
+          description: Profile not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/profiles/share/{shareableId}:
+    get:
+      summary: Get profile by shareable link ID
+      description: Retrieves a profile via its public shareable UUID (for viewing shared profiles)
+      operationId: getProfileByShareableId
+      tags:
+        - profiles
+      parameters:
+        - name: shareableId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: UUID v4 shareable identifier
+          example: "a3f2c5d8-9b1e-4f7a-8c2d-1e3b4f5a6b7c"
+      responses:
+        '200':
+          description: Profile found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+        '404':
+          description: Profile not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Shared profile not found"
+
+components:
+  schemas:
+    Question:
+      type: object
+      required:
+        - id
+        - categoryId
+        - questionId
+        - text
+        - type
+        - order
+      properties:
+        id:
+          type: string
+          description: MongoDB ObjectId
+          example: "507f1f77bcf86cd799439021"
+        categoryId:
+          type: string
+          enum:
+            - communication
+            - work-style
+            - feedback
+            - strengths
+            - pet-peeves
+            - personal
+          description: Category this question belongs to
+        questionId:
+          type: string
+          description: Unique identifier within the category
+          example: "preferred-channel"
+        text:
+          type: string
+          description: Question text to display
+          example: "What's your preferred communication channel?"
+        type:
+          type: string
+          enum:
+            - TEXT
+            - CHOICE
+            - MULTICHOICE
+          description: Type of question (determines UI widget)
+        choices:
+          type: array
+          items:
+            type: string
+          description: Available choices (only for CHOICE/MULTICHOICE types)
+          example: ["Slack", "Email", "Video call"]
+        placeholder:
+          type: string
+          description: Placeholder text for TEXT inputs
+          example: "e.g., Within 24 hours"
+        order:
+          type: integer
+          description: Display order within category (0-indexed)
+          minimum: 0
+
+    Response:
+      type: object
+      required:
+        - value
+        - answeredAt
+      properties:
+        value:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+          description: Answer value (string for TEXT/CHOICE, array for MULTICHOICE)
+          example: "Slack"
+        answeredAt:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp when answered
+          example: "2025-10-06T10:31:00Z"
+
+    Profile:
+      type: object
+      required:
+        - id
+        - name
+        - shareableId
+        - createdAt
+        - updatedAt
+        - responses
+      properties:
+        id:
+          type: string
+          description: MongoDB ObjectId
+          example: "507f1f77bcf86cd799439011"
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: User's name
+          example: "Alex Chen"
+        shareableId:
+          type: string
+          format: uuid
+          description: UUID v4 for public sharing
+          example: "a3f2c5d8-9b1e-4f7a-8c2d-1e3b4f5a6b7c"
+        createdAt:
+          type: string
+          format: date-time
+          description: ISO 8601 creation timestamp
+          example: "2025-10-06T10:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: ISO 8601 last update timestamp
+          example: "2025-10-06T10:45:00Z"
+        responses:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              $ref: '#/components/schemas/Response'
+          description: Nested map of category -> question -> response
+          example:
+            communication:
+              preferred-channel:
+                value: "Slack"
+                answeredAt: "2025-10-06T10:31:00Z"
+              response-time:
+                value: "Within 2 hours"
+                answeredAt: "2025-10-06T10:32:00Z"
+
+    CreateProfileRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: User's name
+          example: "Alex Chen"
+
+    UpdateProfileRequest:
+      type: object
+      required:
+        - responses
+      properties:
+        responses:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              $ref: '#/components/schemas/Response'
+          description: Updated responses (partial or full)
+
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: Human-readable error message
+          example: "Profile not found"
