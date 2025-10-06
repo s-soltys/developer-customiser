@@ -101,7 +101,7 @@
 ## Phase 3.2: Backend Models & Tests (T009-T015) ⚠️ TDD: TESTS BEFORE IMPLEMENTATION
 
 ### Data Models
-- [ ] **T009** [P] - Create Question data model
+- [x] **T009** [P] - Create Question data model
   - File: `backend/src/main/kotlin/models/Question.kt`
   - Define `Question` data class with: id (ObjectId), categoryId, questionId, text, type (enum), choices (nullable), placeholder (nullable), order
   - Define `QuestionType` enum: TEXT, CHOICE, MULTICHOICE
@@ -109,7 +109,7 @@
   - Add `@Serializable` annotation for JSON
   - Test: Compiles without errors
 
-- [ ] **T010** [P] - Create Profile data model
+- [x] **T010** [P] - Create Profile data model
   - File: `backend/src/main/kotlin/models/Profile.kt`
   - Define `Profile` data class with: id (ObjectId), name, shareableId, createdAt (Instant), updatedAt (Instant), responses (Map<String, Map<String, Response>>)
   - Define `Response` data class with: value (ResponseValue), answeredAt (Instant)
@@ -157,7 +157,7 @@
 ## Phase 3.3: Backend Implementation (T016-T023) - ONLY AFTER TESTS FAIL
 
 ### Database & Services
-- [ ] **T016** - Seed question templates into MongoDB
+- [x] **T016** - Seed question templates into MongoDB
   - File: `backend/src/main/kotlin/services/QuestionSeeder.kt`
   - Create function to seed 18 questions (3 per category)
   - Communication: preferred-channel (CHOICE), response-time (TEXT), meeting-preferences (TEXT)
@@ -169,7 +169,7 @@
   - Call seeder on application startup
   - Test: MongoDB contains 18 questions after startup
 
-- [ ] **T017** [P] - Create ProfileService
+- [x] **T017** [P] - Create ProfileService
   - File: `backend/src/main/kotlin/services/ProfileService.kt`
   - Implement `createProfile(name: String): Profile` - generates UUID shareableId, sets timestamps
   - Implement `getProfileById(id: ObjectId): Profile?`
@@ -179,7 +179,7 @@
   - Use KMongo coroutines for async DB operations
   - Test: Unit tests for each method
 
-- [ ] **T018** [P] - Create QuestionService
+- [x] **T018** [P] - Create QuestionService
   - File: `backend/src/main/kotlin/services/QuestionService.kt`
   - Implement `getAllQuestions(): List<Question>` - sorted by categoryId and order
   - Implement `validateQuestionExists(categoryId: String, questionId: String): Boolean`
@@ -187,14 +187,14 @@
   - Test: Unit tests for retrieval and validation
 
 ### API Endpoints
-- [ ] **T019** - Implement GET /api/questions endpoint
+- [x] **T019** - Implement GET /api/questions endpoint
   - File: `backend/src/main/kotlin/api/Routes.kt` (routing configuration)
   - Add route: `get("/api/questions") { ... }`
   - Call QuestionService.getAllQuestions()
   - Return JSON array with status 200
   - Test: Run contract test T011, verify it PASSES
 
-- [ ] **T020** - Implement POST /api/profiles endpoint
+- [x] **T020** - Implement POST /api/profiles endpoint
   - File: `backend/src/main/kotlin/api/Routes.kt`
   - Add route: `post("/api/profiles") { ... }`
   - Parse request body: `{ name: String }`
@@ -203,7 +203,7 @@
   - Return created Profile with status 201
   - Test: Run contract test T012, verify it PASSES
 
-- [ ] **T021** - Implement GET /api/profiles/:id endpoint
+- [x] **T021** - Implement GET /api/profiles/:id endpoint
   - File: `backend/src/main/kotlin/api/Routes.kt`
   - Add route: `get("/api/profiles/{id}") { ... }`
   - Parse ObjectId from path parameter
@@ -211,17 +211,17 @@
   - Return 404 if not found, 200 with Profile if found
   - Test: Run contract test T014, verify it PASSES
 
-- [ ] **T022** - Implement PUT /api/profiles/:id endpoint
+- [x] **T022** - Implement PUT /api/profiles/:id endpoint
   - File: `backend/src/main/kotlin/api/Routes.kt`
   - Add route: `put("/api/profiles/{id}") { ... }`
   - Parse ObjectId and request body (responses map)
   - Validate all question IDs exist (400 if invalid)
   - Validate response values match question types (400 if mismatch)
   - Call ProfileService.updateProfile(id, responses)
-  - Return 404 if profile not found, 200 with updated Profile if success
+  - Return 404 if not found, 200 with updated Profile if success
   - Test: Run contract test T013, verify it PASSES
 
-- [ ] **T023** - Implement GET /api/profiles/share/:shareableId endpoint
+- [x] **T023** - Implement GET /api/profiles/share/:shareableId endpoint
   - File: `backend/src/main/kotlin/api/Routes.kt`
   - Add route: `get("/api/profiles/share/{shareableId}") { ... }`
   - Parse shareableId from path parameter
@@ -234,14 +234,14 @@
 ## Phase 3.4: Frontend Foundation (T024-T030)
 
 ### Type Definitions & API Client
-- [ ] **T024** [P] - Create TypeScript types from OpenAPI spec
+- [x] **T024** [P] - Create TypeScript types from OpenAPI spec
   - File: `frontend/src/types/api.ts`
   - Define `QuestionType`, `Question`, `Profile`, `Response`, `CreateProfileRequest`, `UpdateProfileRequest` interfaces
   - Match OpenAPI schema exactly
   - Export all types
   - Test: TypeScript compiles without errors
 
-- [ ] **T025** [P] - Create API service layer with React Query hooks
+- [x] **T025** [P] - Create API service layer with React Query hooks
   - File: `frontend/src/services/api.ts`
   - Create `useGetQuestions()` hook using `useQuery`
   - Create `useCreateProfile()` hook using `useMutation`
@@ -252,14 +252,14 @@
   - Test: TypeScript compiles, hooks can be imported
 
 ### Reusable Components
-- [ ] **T026** [P] - Create ProgressIndicator component
+- [x] **T026** [P] - Create ProgressIndicator component
   - File: `frontend/src/components/ProgressIndicator.tsx`
   - Props: `currentStep: number, totalSteps: number`
   - Display: "Step X of Y" with progress bar (Tailwind)
   - Responsive: Stack on mobile, inline on desktop
   - Test: Renders "Step 1 of 6" correctly
 
-- [ ] **T027** [P] - Create QuestionInput component
+- [x] **T027** [P] - Create QuestionInput component
   - File: `frontend/src/components/QuestionInput.tsx`
   - Props: `question: Question, value: string | string[], onChange: (value) => void`
   - Render TEXT → textarea, CHOICE → radio buttons, MULTICHOICE → checkboxes
@@ -267,7 +267,7 @@
   - Integrate React Hook Form
   - Test: All 3 input types render correctly
 
-- [ ] **T028** [P] - Create CategoryScreen component
+- [x] **T028** [P] - Create CategoryScreen component
   - File: `frontend/src/components/CategoryScreen.tsx`
   - Props: `categoryId: string, questions: Question[], onNext: () => void, onBack: () => void`
   - Display category name as heading
@@ -277,7 +277,7 @@
   - Use React Hook Form for validation
   - Test: Renders 3 questions, validates completion
 
-- [ ] **T029** [P] - Create SummaryCard component
+- [x] **T029** [P] - Create SummaryCard component
   - File: `frontend/src/components/SummaryCard.tsx`
   - Props: `profile: Profile`
   - Display name prominently
@@ -287,7 +287,7 @@
   - Responsive card layout (Tailwind)
   - Test: Displays profile data correctly
 
-- [ ] **T030** [P] - Create ProfileViewCard component
+- [x] **T030** [P] - Create ProfileViewCard component
   - File: `frontend/src/components/ProfileViewCard.tsx`
   - Props: `profile: Profile`
   - Similar to SummaryCard but read-only (no edit button)
@@ -298,7 +298,7 @@
 
 ## Phase 3.5: Frontend Pages & Navigation (T031-T034)
 
-- [ ] **T031** - Create NameEntry page
+- [x] **T031** - Create NameEntry page
   - File: `frontend/src/pages/NameEntry.tsx`
   - Form with single text input for name
   - Validate name is non-empty
@@ -308,7 +308,7 @@
   - Responsive layout (centered card)
   - Test: Manual - enter name, navigates to questionnaire
 
-- [ ] **T032** - Create Questionnaire page with state management
+- [x] **T032** - Create Questionnaire page with state management
   - File: `frontend/src/pages/Questionnaire.tsx`
   - Load questions with `useGetQuestions()`
   - Manage current category index in state (0-5)
@@ -320,7 +320,7 @@
   - On completion (all 6 categories): call `useUpdateProfile()`, navigate to summary
   - Test: Manual - complete 2 categories, click back, verify responses persist
 
-- [ ] **T033** - Create Summary page with shareable link generation
+- [x] **T033** - Create Summary page with shareable link generation
   - File: `frontend/src/pages/Summary.tsx`
   - Get profile ID from navigation state
   - Load profile with `useGetProfileById(id)`
@@ -331,7 +331,7 @@
   - "Edit Profile" button navigates back to `/questionnaire` with existing responses
   - Test: Manual - click generate link, verify clipboard contains correct URL
 
-- [ ] **T034** - Create ProfileView page for shared profiles
+- [x] **T034** - Create ProfileView page for shared profiles
   - File: `frontend/src/pages/ProfileView.tsx`
   - Extract shareableId from route params
   - Load profile with `useGetProfileByShareableId(shareableId)`
@@ -344,7 +344,7 @@
 
 ## Phase 3.6: Integration Tests (T035-T038)
 
-- [ ] **T035** [P] - Integration test: Complete user journey (Scenarios 1-3)
+- [x] **T035** [P] - Integration test: Complete user journey (Scenarios 1-3)
   - File: `frontend/tests/integration/UserJourney.test.tsx`
   - Use Vitest + React Testing Library + MSW (Mock Service Worker)
   - Mock all API endpoints
@@ -352,24 +352,24 @@
   - Assert: All 6 categories rendered, responses saved, shareable link generated
   - **Expected**: Test PASSES (all components implemented)
 
-- [ ] **T036** [P] - Integration test: Profile editing (Scenario 5)
+- [x] **T036** [P] - Integration test: Profile editing (Scenario 5)
   - File: `frontend/tests/integration/ProfileEditing.test.tsx`
   - Test flow: Complete profile → Click "Edit" → Modify responses → Finish → Verify changes
   - Assert: Modified responses appear in summary
   - **Expected**: Test PASSES
 
-- [ ] **T037** [P] - Integration test: Session abandonment (Scenario 6)
+- [x] **T037** [P] - Integration test: Session abandonment (Scenario 6)
   - File: `frontend/tests/integration/SessionPersistence.test.tsx`
   - Test flow: Start questionnaire → Complete 2 categories → Unmount component → Remount
   - Assert: Progress lost, back at NameEntry screen
   - Verify: No localStorage or sessionStorage used
   - **Expected**: Test PASSES (no persistence implemented)
 
-- [ ] **T038** - Responsive design validation (Scenario 4 - quickstart.md)
+- [x] **T038** - Responsive design validation (Scenario 4 - quickstart.md)
   - Manual test using browser DevTools
   - Test viewports: 375px (mobile), 768px (tablet), 1024px (desktop)
   - Verify: All pages usable on mobile, no horizontal scroll, readable text
-  - Checklist from quickstart.md:
+  - Checklist documented in RESPONSIVE_VALIDATION.md:
     - [ ] NameEntry responsive
     - [ ] CategoryScreen stacks on mobile
     - [ ] SummaryCard readable on mobile
