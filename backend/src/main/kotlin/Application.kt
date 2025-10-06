@@ -6,10 +6,10 @@ import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.cors.routing.*
 import io.ktor.http.*
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.polymorphic
-import kotlinx.serialization.modules.subclass
 import com.mongodb.kotlin.client.coroutine.MongoClient
+import com.mongodb.MongoClientSettings
+import org.bson.codecs.configuration.CodecRegistries
+import config.CustomCodecProvider
 import services.QuestionSeeder
 import kotlinx.coroutines.runBlocking
 
@@ -19,9 +19,15 @@ fun main() {
 }
 
 fun Application.module() {
-    // MongoDB connection
+    // MongoDB connection with custom codecs
+    val codecRegistry = CodecRegistries.fromRegistries(
+        CodecRegistries.fromProviders(CustomCodecProvider()),
+        MongoClientSettings.getDefaultCodecRegistry()
+    )
+
     val mongoClient = MongoClient.create("mongodb://localhost:27017")
     val database = mongoClient.getDatabase("howtoworkwithme")
+        .withCodecRegistry(codecRegistry)
 
     // Seed questions on startup
     runBlocking {
@@ -39,27 +45,23 @@ fun Application.module() {
             prettyPrint = true
             isLenient = true
             ignoreUnknownKeys = true
-            serializersModule = SerializersModule {
-                polymorphic(models.ResponseValue::class) {
-                    subclass(models.ResponseValue.Text::class)
-                    subclass(models.ResponseValue.Choice::class)
-                    subclass(models.ResponseValue.MultiChoice::class)
-                }
-            }
         })
     }
 
     // Install CORS
     install(CORS) {
-        allowHost("localhost:5173")
-        allowHost("127.0.0.1:5173")
+        allowHost("localhost:5173", schemes = listOf("http"))
+        allowHost("127.0.0.1:5173", schemes = listOf("http"))
         allowHeader(HttpHeaders.ContentType)
         allowHeader(HttpHeaders.Authorization)
-        allowMethod(HttpMethod.Options)
+        allowMethod(HttpMethod.Get)
+        allowMethod(HttpMethod.Post)
         allowMethod(HttpMethod.Put)
         allowMethod(HttpMethod.Delete)
         allowMethod(HttpMethod.Patch)
+        allowMethod(HttpMethod.Options)
         allowCredentials = true
+        anyHost() // Allow any host during development
     }
 
     // Configure routing

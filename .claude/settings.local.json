@@ -10,7 +10,11 @@
       "Bash(docker compose:*)",
       "Bash(gradle wrapper:*)",
       "Bash(curl:*)",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "Bash(lsof:*)",
+      "Bash(./gradlew:*)",
+      "Bash(xargs kill:*)",
+      "Bash(export:*)"
     ],
     "deny": [],
     "ask": []

@@ -1,30 +1,49 @@
 package models
 
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.*
+import kotlinx.serialization.descriptors.*
+import kotlinx.serialization.encoding.*
+import kotlinx.serialization.json.*
+import kotlinx.serialization.builtins.*
 import org.bson.types.ObjectId
 import kotlinx.datetime.Instant
 
-@Serializable
-sealed class ResponseValue {
-    @Serializable
-    data class Text(val text: String) : ResponseValue()
+// Custom serializer for response value that can be String or List<String>
+@OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
+object ResponseValueSerializer : KSerializer<Any> {
+    override val descriptor: SerialDescriptor =
+        buildSerialDescriptor("ResponseValue", PolymorphicKind.SEALED)
 
-    @Serializable
-    data class Choice(val selected: String) : ResponseValue()
+    override fun serialize(encoder: Encoder, value: Any) {
+        when (value) {
+            is String -> encoder.encodeString(value)
+            is List<*> -> {
+                @Suppress("UNCHECKED_CAST")
+                encoder.encodeSerializableValue(
+                    ListSerializer(serializer<String>()),
+                    value as List<String>
+                )
+            }
+            else -> throw SerializationException("Unsupported response value type")
+        }
+    }
 
-    @Serializable
-    data class MultiChoice(val selected: List<String>) : ResponseValue()
+    override fun deserialize(decoder: Decoder): Any {
+        val jsonDecoder = decoder as? JsonDecoder
+            ?: throw SerializationException("This serializer only works with JSON")
+
+        return when (val element = jsonDecoder.decodeJsonElement()) {
+            is JsonPrimitive -> element.content
+            is JsonArray -> element.map { (it as JsonPrimitive).content }
+            else -> throw SerializationException("Unexpected JSON element type")
+        }
+    }
 }
 
 @Serializable
 data class Response(
-    val value: ResponseValue,
+    @Serializable(with = ResponseValueSerializer::class)
+    val value: Any,  // Can be String or List<String>
     @Serializable(with = InstantSerializer::class)
     val answeredAt: Instant
 )
