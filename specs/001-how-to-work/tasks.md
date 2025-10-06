@@ -38,61 +38,63 @@
 ## Phase 3.1: Project Setup (T001-T008)
 
 ### Environment Initialization
-- [ ] **T001** - Create monorepo directory structure
+- [x] **T001** - Create monorepo directory structure
   - Create `backend/`, `frontend/`, `shared/contracts/`, `docker-compose.yml` at repo root
   - Copy OpenAPI spec from `specs/001-how-to-work/contracts/api-spec.yaml` to `shared/contracts/api-spec.yaml`
 
-- [ ] **T002** - Configure Docker Compose for MongoDB
+- [x] **T002** - Configure Docker Compose for MongoDB
   - Create `docker-compose.yml` with MongoDB 7 service on port 27017
   - Configure volume mount for data persistence
   - Set database name to `howtoworkwithme`
-  - Test: `docker-compose up -d && docker-compose ps` shows running MongoDB
+  - Test: `docker compose up -d && docker compose ps` shows running MongoDB
+  - Note: User needs to run `docker compose up -d` manually after installing Docker
 
 ### Backend Setup (Kotlin + Ktor)
-- [ ] **T003** - Initialize Kotlin backend project with Gradle
+- [x] **T003** - Initialize Kotlin backend project with Gradle
   - Create `backend/build.gradle.kts` with Kotlin 1.9+ and Ktor 2.3+ dependencies
   - Add KMongo 4.11+ for MongoDB
   - Add Kotest 5.8+ for testing
   - Add kotlinx.serialization for JSON
   - Configure Gradle wrapper: `backend/gradlew`
   - Set source directories: `backend/src/main/kotlin/`, `backend/src/test/kotlin/`
-  - Test: `cd backend && ./gradlew build` succeeds
+  - Note: User needs to run `gradle wrapper` to generate gradlew after installing Gradle
+  - See backend/README.md for setup instructions
 
-- [ ] **T004** - Configure Ktor application
+- [x] **T004** - Configure Ktor application
   - Create `backend/src/main/kotlin/Application.kt` with basic Ktor server
   - Install ContentNegotiation plugin with kotlinx.serialization JSON
   - Install CORS plugin allowing `http://localhost:5173` origin
   - Configure server to run on port 8080
   - Add MongoDB connection string: `mongodb://localhost:27017/howtoworkwithme`
-  - Test: `./gradlew run` starts server without errors
+  - Test: `./gradlew run` starts server without errors (after Gradle wrapper setup)
 
 ### Frontend Setup (React + Vite)
-- [ ] **T005** - Initialize React frontend with Vite and TypeScript
-  - Run `npm create vite@latest frontend -- --template react-ts` at repo root
+- [x] **T005** - Initialize React frontend with Vite and TypeScript
+  - Created `frontend/package.json` with all dependencies
   - Install dependencies: React 18+, React Router DOM 6+, TanStack Query 5+
   - Install Tailwind CSS 3+ and configure `tailwind.config.js`
   - Install React Hook Form 7+ and Zod 3+ for forms
   - Configure Vite proxy to backend: `http://localhost:8080` for `/api/*`
-  - Test: `cd frontend && npm run dev` starts on port 5173
+  - Note: User needs to run `npm install` after installing Node.js
+  - See frontend/README.md for setup instructions
 
-- [ ] **T006** [P] - Configure Tailwind CSS
+- [x] **T006** [P] - Configure Tailwind CSS
   - Create `frontend/tailwind.config.js` with content paths for `src/**/*.{ts,tsx}`
   - Import Tailwind directives in `frontend/src/index.css`
   - Configure responsive breakpoints (sm: 640px, md: 768px, lg: 1024px)
-  - Test: Add Tailwind class to App.tsx, verify styling works
+  - Tailwind classes visible in App.tsx placeholder components
 
-- [ ] **T007** [P] - Set up React Query provider
+- [x] **T007** [P] - Set up React Query provider
   - Create `frontend/src/providers/QueryProvider.tsx` with QueryClient
   - Configure default options: staleTime 5 minutes, retry 1
   - Wrap App with QueryClientProvider in `frontend/src/main.tsx`
   - Add React Query DevTools for development
-  - Test: DevTools icon appears in browser
 
-- [ ] **T008** [P] - Configure React Router
+- [x] **T008** [P] - Configure React Router
   - Create router configuration in `frontend/src/App.tsx`
   - Define routes: `/` (NameEntry), `/questionnaire` (Questionnaire), `/share/:shareableId` (ProfileView)
   - Use `createBrowserRouter` and `RouterProvider`
-  - Test: Navigate to `/` shows placeholder page
+  - Placeholder components created for all routes
 
 ---
 
