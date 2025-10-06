@@ -21,3 +21,4 @@ I do not know the Kotlin ecosystem well enough so I would need to have to set it
 The app is a monorepo.
 The data model should be flexible - I can later introduce new questions, hence maybe use a key-value pair.
 Configure also CLAUDE.md files, and consider creating sub-agents for Kotlin and for React, that will follow your recommendations.
+Scalability or performance are not concerns, this is a pure MVP.
