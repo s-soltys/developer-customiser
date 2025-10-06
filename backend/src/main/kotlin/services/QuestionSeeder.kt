@@ -2,10 +2,10 @@ package services
 
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.toList
 import models.Category
 import models.Question
 import models.QuestionType
-import org.litote.kmongo.coroutine.toList
 
 class QuestionSeeder(private val database: MongoDatabase) {
 

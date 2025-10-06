@@ -11,6 +11,12 @@ repositories {
     mavenCentral()
 }
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
 dependencies {
     // Ktor Server
     implementation("io.ktor:ktor-server-core:2.3.7")
