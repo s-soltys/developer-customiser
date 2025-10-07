@@ -1,7 +1,7 @@
 # How to Work With Me App - Development Guidelines
 
-**Auto-generated from feature plans** | Last updated: 2025-10-06
-**Feature**: 001-how-to-work
+**Auto-generated from feature plans** | Last updated: 2025-10-07
+**Features**: 001-how-to-work, 002-create-a-backoffice
 
 ---
 
@@ -183,12 +183,23 @@ export function NameEntry() {
 **Contract**: See `specs/001-how-to-work/contracts/api-spec.yaml`
 
 **Key Endpoints**:
-- `GET /api/questions` - Fetch all question templates
+- `GET /api/questions` - Fetch all active question templates
 - `POST /api/profiles` - Create new profile
 - `PUT /api/profiles/:id` - Update profile responses
 - `GET /api/profiles/share/:shareableId` - Get public profile
+- `POST /api/admin/auth` - Authenticate admin (password validation)
+- `GET /api/admin/categories` - List all categories (admin)
+- `POST /api/admin/categories` - Create category (admin)
+- `PUT /api/admin/categories/:id` - Update category (admin)
+- `DELETE /api/admin/categories/:id` - Soft delete category (admin)
+- `GET /api/admin/questions` - List all questions (admin)
+- `POST /api/admin/questions` - Create question (admin)
+- `PUT /api/admin/questions/:id` - Update question (admin)
+- `DELETE /api/admin/questions/:id` - Soft delete question (admin)
 
 **CORS**: Backend configured to allow `localhost:5173` origin
+
+**Authentication**: Admin endpoints protected by HTTP Basic Auth (password from `ADMIN_PASSWORD` env var)
 
 ---
 
@@ -274,9 +285,29 @@ testImplementation("io.kotest:kotest-runner-junit5:5.8.+")
 - Public access route: `/share/:shareableId` (no auth required)
 - Unique index on shareableId in MongoDB
 
+### Soft Delete Pattern (Admin Features)
+- Questions and categories use `active` boolean field (default: true)
+- Soft delete: Set `active = false` instead of removing documents
+- Public API filters: `active = true` (only show active items)
+- Admin API shows all items (including inactive)
+- **Preserves user responses**: Inactive questions remain viewable in existing profiles
+- **Cascade behavior**: Deleting category can soft-delete all its questions (optional)
+
+### Admin Authentication
+- Single shared password stored in `ADMIN_PASSWORD` environment variable
+- Ktor Basic Auth plugin validates credentials
+- Admin routes: `/admin/*` (React Router nested routes)
+- Session stored in `sessionStorage` (expires on tab close)
+
 ---
 
 ## Recent Changes
+- **2025-10-07**: Backoffice admin interface (002-create-a-backoffice)
+  - Added Question and Category entities with soft delete
+  - Implemented admin authentication (Ktor Basic Auth + env var password)
+  - Created admin CRUD endpoints for questions and categories
+  - Added drag-and-drop reordering (@dnd-kit library)
+  - Defined admin routes (`/admin/*`) with protected layout
 - **2025-10-06**: Initial setup for 001-how-to-work feature
   - Chose Ktor for Kotlin backend
   - Chose Vite + React Query for frontend
@@ -287,12 +318,21 @@ testImplementation("io.kotest:kotest-runner-junit5:5.8.+")
 
 ## References
 
+### Feature 001: How to Work With Me
 - **Feature Spec**: `specs/001-how-to-work/spec.md`
 - **Implementation Plan**: `specs/001-how-to-work/plan.md`
 - **Technical Research**: `specs/001-how-to-work/research.md`
 - **Data Model**: `specs/001-how-to-work/data-model.md`
 - **API Contract**: `specs/001-how-to-work/contracts/api-spec.yaml`
 - **Quickstart Guide**: `specs/001-how-to-work/quickstart.md`
+
+### Feature 002: Backoffice Question Configuration
+- **Feature Spec**: `specs/002-create-a-backoffice/spec.md`
+- **Implementation Plan**: `specs/002-create-a-backoffice/plan.md`
+- **Technical Research**: `specs/002-create-a-backoffice/research.md`
+- **Data Model**: `specs/002-create-a-backoffice/data-model.md`
+- **Admin API Contract**: `specs/002-create-a-backoffice/contracts/admin-api-spec.yaml`
+- **Quickstart Guide**: `specs/002-create-a-backoffice/quickstart.md`
 
 <!-- MANUAL ADDITIONS START -->
 <!-- Add project-specific conventions, known issues, or deployment notes here -->

@@ -1,0 +1,469 @@
+openapi: 3.0.3
+info:
+  title: Backoffice Admin API
+  description: Admin endpoints for managing questions and categories in How to Work With Me application
+  version: 1.0.0
+  contact:
+    name: How to Work With Me Team
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+
+security:
+  - basicAuth: []
+
+paths:
+  /api/admin/auth:
+    post:
+      summary: Verify admin password
+      description: Validates admin credentials against environment variable
+      tags:
+        - Authentication
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - password
+              properties:
+                password:
+                  type: string
+                  format: password
+                  example: "admin-secret"
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  authenticated:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Authentication successful"
+        '401':
+          description: Invalid password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/admin/categories:
+    get:
+      summary: List all categories
+      description: Returns all categories including inactive ones (admin view)
+      tags:
+        - Categories
+      responses:
+        '200':
+          description: List of categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      summary: Create new category
+      description: Creates a new category with specified name and order
+      tags:
+        - Categories
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - order
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 100
+                  example: "Communication"
+                order:
+                  type: integer
+                  minimum: 0
+                  example: 0
+      responses:
+        '201':
+          description: Category created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: Category name already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/admin/categories/{id}:
+    parameters:
+      - $ref: '#/components/parameters/CategoryId'
+
+    put:
+      summary: Update category
+      description: Updates category name and/or order
+      tags:
+        - Categories
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 100
+                  example: "Effective Communication"
+                order:
+                  type: integer
+                  minimum: 0
+                  example: 1
+      responses:
+        '200':
+          description: Category updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      summary: Soft delete category
+      description: Marks category as inactive (soft delete). Optionally cascades to questions.
+      tags:
+        - Categories
+      parameters:
+        - name: cascade
+          in: query
+          description: If true, also soft-deletes all questions in this category
+          required: false
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '204':
+          description: Category soft-deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Category has active questions (use cascade=true)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/admin/questions:
+    get:
+      summary: List all questions
+      description: Returns all questions including inactive ones (admin view)
+      tags:
+        - Questions
+      parameters:
+        - name: categoryId
+          in: query
+          description: Filter questions by category
+          required: false
+          schema:
+            type: string
+            format: objectid
+            example: "507f1f77bcf86cd799439011"
+      responses:
+        '200':
+          description: List of questions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Question'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      summary: Create new question
+      description: Creates a new question within a category
+      tags:
+        - Questions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - text
+                - categoryId
+                - order
+              properties:
+                text:
+                  type: string
+                  minLength: 1
+                  maxLength: 500
+                  example: "What is your preferred communication channel?"
+                categoryId:
+                  type: string
+                  format: objectid
+                  example: "507f1f77bcf86cd799439011"
+                order:
+                  type: integer
+                  minimum: 0
+                  example: 0
+      responses:
+        '201':
+          description: Question created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Question'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/admin/questions/{id}:
+    parameters:
+      - $ref: '#/components/parameters/QuestionId'
+
+    put:
+      summary: Update question
+      description: Updates question text, category, and/or order
+      tags:
+        - Questions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                text:
+                  type: string
+                  minLength: 1
+                  maxLength: 500
+                  example: "How do you prefer to communicate with your team?"
+                categoryId:
+                  type: string
+                  format: objectid
+                  example: "507f1f77bcf86cd799439011"
+                order:
+                  type: integer
+                  minimum: 0
+                  example: 2
+      responses:
+        '200':
+          description: Question updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Question'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      summary: Soft delete question
+      description: Marks question as inactive (soft delete). Preserves user responses.
+      tags:
+        - Questions
+      responses:
+        '204':
+          description: Question soft-deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+      description: Admin password from ADMIN_PASSWORD environment variable
+
+  parameters:
+    CategoryId:
+      name: id
+      in: path
+      required: true
+      description: MongoDB ObjectId of the category
+      schema:
+        type: string
+        format: objectid
+        example: "507f1f77bcf86cd799439011"
+
+    QuestionId:
+      name: id
+      in: path
+      required: true
+      description: MongoDB ObjectId of the question
+      schema:
+        type: string
+        format: objectid
+        example: "507f191e810c19729de860ea"
+
+  schemas:
+    Category:
+      type: object
+      required:
+        - id
+        - name
+        - order
+        - active
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: objectid
+          example: "507f1f77bcf86cd799439011"
+          description: MongoDB ObjectId
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: "Communication"
+        order:
+          type: integer
+          minimum: 0
+          example: 0
+          description: Display order (0-indexed)
+        active:
+          type: boolean
+          example: true
+          description: false = soft deleted
+        createdAt:
+          type: string
+          format: date-time
+          example: "2025-10-07T10:00:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2025-10-07T11:30:00Z"
+
+    Question:
+      type: object
+      required:
+        - id
+        - text
+        - categoryId
+        - order
+        - active
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: objectid
+          example: "507f191e810c19729de860ea"
+          description: MongoDB ObjectId
+        text:
+          type: string
+          minLength: 1
+          maxLength: 500
+          example: "What is your preferred communication channel?"
+        categoryId:
+          type: string
+          format: objectid
+          example: "507f1f77bcf86cd799439011"
+          description: Reference to Category
+        order:
+          type: integer
+          minimum: 0
+          example: 0
+          description: Display order within category (0-indexed)
+        active:
+          type: boolean
+          example: true
+          description: false = soft deleted (hidden from new questionnaires)
+        createdAt:
+          type: string
+          format: date-time
+          example: "2025-10-07T10:00:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2025-10-07T11:30:00Z"
+
+    Error:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          example: "VALIDATION_ERROR"
+        message:
+          type: string
+          example: "Category name cannot be empty"
+
+  responses:
+    BadRequest:
+      description: Invalid request data
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "VALIDATION_ERROR"
+            message: "Question text cannot be empty"
+
+    Unauthorized:
+      description: Authentication required or invalid credentials
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "UNAUTHORIZED"
+            message: "Invalid admin password"
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "NOT_FOUND"
+            message: "Category not found"
+
+tags:
+  - name: Authentication
+    description: Admin authentication endpoints
+  - name: Categories
+    description: Category management operations
+  - name: Questions
+    description: Question management operations
