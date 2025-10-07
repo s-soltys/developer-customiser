@@ -48,7 +48,7 @@
 
 ## Phase 3.1: Setup & Dependencies
 
-### T001: Install Backend Dependencies
+### T001: Install Backend Dependencies ✅ [X]
 **File**: `backend/build.gradle.kts`
 
 Add Ktor authentication plugin:
@@ -60,7 +60,7 @@ implementation("io.ktor:ktor-server-auth:2.3.7")
 
 ---
 
-### T002 [P]: Install Frontend Dependencies
+### T002 [P]: Install Frontend Dependencies ✅ [X]
 **File**: `frontend/package.json`
 
 Add drag-and-drop library:
@@ -74,7 +74,7 @@ npm install @dnd-kit/core@^6.0.8 @dnd-kit/sortable@^8.0.0
 
 ---
 
-### T003 [P]: Create Database Seed Script
+### T003 [P]: Create Database Seed Script ✅ [X]
 **File**: `backend/src/main/kotlin/SeedDatabase.kt`
 
 Create seed script for initial 6 categories:
@@ -374,7 +374,7 @@ Test admin authentication hook:
 
 ### Backend Models
 
-#### T021 [P]: Create Category Model
+#### T021 [P]: Create Category Model [X]
 **File**: `backend/src/main/kotlin/models/Category.kt`
 
 Implement Category data class per `data-model.md`:
@@ -389,7 +389,7 @@ Implement Category data class per `data-model.md`:
 
 ---
 
-#### T022 [P]: Create Question Model
+#### T022 [P]: Create Question Model [X]
 **File**: `backend/src/main/kotlin/models/Question.kt`
 
 Implement Question data class per `data-model.md`:
@@ -407,7 +407,7 @@ Implement Question data class per `data-model.md`:
 
 ### Backend Services
 
-#### T023 [P]: Implement CategoryService
+#### T023 [P]: Implement CategoryService [X]
 **File**: `backend/src/main/kotlin/services/CategoryService.kt`
 
 Implement CRUD operations:
@@ -427,7 +427,7 @@ Business logic:
 
 ---
 
-#### T024 [P]: Implement QuestionService
+#### T024 [P]: Implement QuestionService [X]
 **File**: `backend/src/main/kotlin/services/QuestionService.kt`
 
 Implement CRUD operations:
@@ -451,7 +451,7 @@ Business logic:
 
 ### Backend Authentication
 
-#### T025: Implement Ktor Authentication Plugin
+#### T025: Implement Ktor Authentication Plugin [X]
 **File**: `backend/src/main/kotlin/plugins/Authentication.kt`
 
 Configure Ktor authentication:
@@ -470,7 +470,7 @@ Configure Ktor authentication:
 
 **Note**: Admin routes all go in the same file, so must be sequential (not [P])
 
-#### T026: Implement POST /api/admin/auth Endpoint
+#### T026: Implement POST /api/admin/auth Endpoint [X]
 **File**: `backend/src/main/kotlin/api/AdminRoutes.kt`
 
 Create AdminRoutes.kt and implement authentication endpoint:
@@ -484,7 +484,7 @@ Create AdminRoutes.kt and implement authentication endpoint:
 
 ---
 
-#### T027: Implement GET /api/admin/categories Endpoint
+#### T027: Implement GET /api/admin/categories Endpoint [X]
 **File**: `backend/src/main/kotlin/api/AdminRoutes.kt` (same file as T026)
 
 Add authenticated route:
@@ -498,7 +498,7 @@ Add authenticated route:
 
 ---
 
-#### T028: Implement POST /api/admin/categories Endpoint
+#### T028: Implement POST /api/admin/categories Endpoint [X]
 **File**: `backend/src/main/kotlin/api/AdminRoutes.kt` (same file as T026-T027)
 
 Add authenticated route:
@@ -513,7 +513,7 @@ Add authenticated route:
 
 ---
 
-#### T029: Implement PUT /api/admin/categories/{id} Endpoint
+#### T029: Implement PUT /api/admin/categories/{id} Endpoint [X]
 **File**: `backend/src/main/kotlin/api/AdminRoutes.kt` (same file as T026-T028)
 
 Add authenticated route:
@@ -528,7 +528,7 @@ Add authenticated route:
 
 ---
 
-#### T030: Implement DELETE /api/admin/categories/{id} Endpoint
+#### T030: Implement DELETE /api/admin/categories/{id} Endpoint [X]
 **File**: `backend/src/main/kotlin/api/AdminRoutes.kt` (same file as T026-T029)
 
 Add authenticated route:
@@ -542,7 +542,7 @@ Add authenticated route:
 
 ---
 
-#### T031: Implement GET /api/admin/questions Endpoint
+#### T031: Implement GET /api/admin/questions Endpoint [X]
 **File**: `backend/src/main/kotlin/api/AdminRoutes.kt` (same file as T026-T030)
 
 Add authenticated route:
@@ -556,7 +556,7 @@ Add authenticated route:
 
 ---
 
-#### T032: Implement POST /api/admin/questions Endpoint
+#### T032: Implement POST /api/admin/questions Endpoint [X]
 **File**: `backend/src/main/kotlin/api/AdminRoutes.kt` (same file as T026-T031)
 
 Add authenticated route:
@@ -571,7 +571,7 @@ Add authenticated route:
 
 ---
 
-#### T033: Implement PUT & DELETE /api/admin/questions/{id} Endpoints
+#### T033: Implement PUT & DELETE /api/admin/questions/{id} Endpoints [X]
 **File**: `backend/src/main/kotlin/api/AdminRoutes.kt` (same file as T026-T032)
 
 Add authenticated routes:
@@ -585,7 +585,7 @@ Add authenticated routes:
 
 ---
 
-#### T034: Update GET /api/questions to Filter Active Only
+#### T034: Update GET /api/questions to Filter Active Only [X]
 **File**: `backend/src/main/kotlin/api/QuestionRoutes.kt`
 
 Modify existing public questions endpoint:

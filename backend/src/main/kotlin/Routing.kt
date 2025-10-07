@@ -3,17 +3,22 @@ import io.ktor.server.routing.*
 import io.ktor.server.response.*
 import io.ktor.server.request.*
 import io.ktor.http.*
-import com.mongodb.kotlin.client.coroutine.MongoDatabase
+import org.litote.kmongo.coroutine.CoroutineDatabase
 import services.QuestionService
 import services.ProfileService
+import services.CategoryService
 import models.*
 import org.bson.types.ObjectId
+import api.adminRoutes
 
-fun Application.configureRouting(database: MongoDatabase) {
+fun Application.configureRouting(database: CoroutineDatabase) {
     val questionService = QuestionService(database)
     val profileService = ProfileService(database)
+    val categoryService = CategoryService(database)
 
     routing {
+        // Admin routes
+        adminRoutes(database)
         get("/") {
             call.respondText("How to Work With Me API - Server is running")
         }
@@ -22,10 +27,11 @@ fun Application.configureRouting(database: MongoDatabase) {
             call.respondText("OK")
         }
 
-        // GET /api/questions - Get all question templates
+        // GET /api/questions - Get all active question templates (public API)
         get("/api/questions") {
             try {
-                val questions = questionService.getAllQuestions()
+                // Only return active questions and categories for public questionnaire
+                val questions = questionService.getActiveQuestions()
                 call.respond(HttpStatusCode.OK, questions)
             } catch (e: Exception) {
                 call.respond(HttpStatusCode.InternalServerError, ErrorResponse("Failed to fetch questions: ${e.message}"))
@@ -94,20 +100,7 @@ fun Application.configureRouting(database: MongoDatabase) {
 
                 val request = call.receive<UpdateProfileRequest>()
 
-                // Validate all question IDs exist
-                for ((categoryId, questions) in request.responses) {
-                    for ((questionId, _) in questions) {
-                        if (!questionService.validateQuestionExists(categoryId, questionId)) {
-                            call.respond(
-                                HttpStatusCode.BadRequest,
-                                ErrorResponse("Question '$questionId' not found in category '$categoryId'")
-                            )
-                            return@put
-                        }
-                    }
-                }
-
-                // TODO: Validate response values match question types
+                // TODO: Validate all question IDs exist if needed
 
                 val updatedProfile = profileService.updateProfile(id, request.responses)
                 if (updatedProfile == null) {

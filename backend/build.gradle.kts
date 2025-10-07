@@ -24,6 +24,7 @@ dependencies {
     implementation("io.ktor:ktor-server-content-negotiation:2.3.7")
     implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.7")
     implementation("io.ktor:ktor-server-cors:2.3.7")
+    implementation("io.ktor:ktor-server-auth:2.3.7")
 
     // MongoDB
     implementation("org.mongodb:mongodb-driver-kotlin-coroutine:4.11.1")
@@ -46,6 +47,14 @@ dependencies {
 
 application {
     mainClass.set("ApplicationKt")
+}
+
+tasks.register<JavaExec>("seed") {
+    group = "application"
+    description = "Seed the database with initial categories"
+    mainClass.set("SeedDatabaseKt")
+    classpath = sourceSets["main"].runtimeClasspath
+    args("seed")
 }
 
 tasks.withType<Test> {

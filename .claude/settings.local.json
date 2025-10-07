@@ -14,7 +14,9 @@
       "Bash(lsof:*)",
       "Bash(./gradlew:*)",
       "Bash(xargs kill:*)",
-      "Bash(export:*)"
+      "Bash(export:*)",
+      "Bash(npm install:*)",
+      "Bash(specs/002-create-a-backoffice/tasks.md)"
     ],
     "deny": [],
     "ask": []

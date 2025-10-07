@@ -1,43 +1,157 @@
 package services
 
-import com.mongodb.kotlin.client.coroutine.MongoDatabase
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.toList
+import com.mongodb.client.model.IndexOptions
+import kotlinx.datetime.Clock
+import models.Category
 import models.Question
-import org.litote.kmongo.and
-import org.litote.kmongo.eq
+import org.bson.Document
+import org.bson.types.ObjectId
+import org.litote.kmongo.*
+import org.litote.kmongo.coroutine.CoroutineDatabase
 
-class QuestionService(private val database: MongoDatabase) {
+/**
+ * Service for Question CRUD operations with soft delete support.
+ */
+class QuestionService(private val database: CoroutineDatabase) {
+    private val questionCollection = database.getCollection<Question>("questions")
+    private val categoryCollection = database.getCollection<Category>("categories")
 
-    private val collection = database.getCollection<Question>("questions")
+    suspend fun createIndexes() {
+        // Compound index on category + order for efficient queries
+        questionCollection.createIndex(
+            ascending(Question::categoryId, Question::order)
+        )
 
-    suspend fun getAllQuestions(): List<Question> {
-        return collection.find()
-            .toList()
-            .sortedWith(compareBy({ it.categoryId }, { it.order }))
+        // Index on active for filtering
+        questionCollection.createIndex(ascending(Question::active))
     }
 
-    suspend fun getQuestionsByCategory(categoryId: String): List<Question> {
-        return collection.find(Question::categoryId eq categoryId)
-            .toList()
-            .sortedBy { it.order }
+    /**
+     * Create a new question.
+     * @throws IllegalArgumentException if text is empty/too long or categoryId invalid
+     * @throws IllegalStateException if category doesn't exist
+     */
+    suspend fun createQuestion(text: String, categoryId: ObjectId, order: Int): Question {
+        // Validate category exists
+        val category = categoryCollection.findOneById(categoryId)
+            ?: throw IllegalStateException("Category with id '$categoryId' does not exist")
+
+        val question = Question(
+            text = text,
+            categoryId = categoryId,
+            order = order
+        )
+
+        questionCollection.insertOne(question)
+        return question
     }
 
-    suspend fun validateQuestionExists(categoryId: String, questionId: String): Boolean {
-        return collection.find(
+    /**
+     * Get all questions (including inactive for admin view).
+     * @param categoryId optional filter by category
+     */
+    suspend fun getAllQuestions(categoryId: ObjectId? = null): List<Question> {
+        val filter = if (categoryId != null) {
+            Question::categoryId eq categoryId
+        } else {
+            null
+        }
+
+        return questionCollection
+            .find(filter ?: Document())
+            .sort(ascending(Question::categoryId, Question::order))
+            .toList()
+    }
+
+    /**
+     * Get only active questions (for public API).
+     * @param categoryId optional filter by category
+     */
+    suspend fun getActiveQuestions(categoryId: ObjectId? = null): List<Question> {
+        val filter = if (categoryId != null) {
             and(
                 Question::categoryId eq categoryId,
-                Question::questionId eq questionId
+                Question::active eq true
             )
-        ).firstOrNull() != null
+        } else {
+            Question::active eq true
+        }
+
+        return questionCollection
+            .find(filter)
+            .sort(ascending(Question::categoryId, Question::order))
+            .toList()
     }
 
-    suspend fun getQuestion(categoryId: String, questionId: String): Question? {
-        return collection.find(
-            and(
-                Question::categoryId eq categoryId,
-                Question::questionId eq questionId
+    /**
+     * Get question by ID.
+     */
+    suspend fun getQuestionById(id: ObjectId): Question? {
+        return questionCollection.findOneById(id)
+    }
+
+    /**
+     * Update question text, category, and/or order.
+     * @return updated question or null if not found
+     */
+    suspend fun updateQuestion(
+        id: ObjectId,
+        text: String? = null,
+        categoryId: ObjectId? = null,
+        order: Int? = null
+    ): Question? {
+        val question = questionCollection.findOneById(id) ?: return null
+
+        val updates = mutableListOf<SetTo<*>>()
+
+        if (text != null && text != question.text) {
+            require(text.isNotBlank()) { "Question text cannot be empty" }
+            require(text.length <= 500) { "Question text cannot exceed 500 characters" }
+            updates.add(SetTo(Question::text, text))
+        }
+
+        if (categoryId != null && categoryId != question.categoryId) {
+            // Validate category exists
+            val category = categoryCollection.findOneById(categoryId)
+                ?: throw IllegalStateException("Category with id '$categoryId' does not exist")
+            updates.add(SetTo(Question::categoryId, categoryId))
+        }
+
+        if (order != null && order != question.order) {
+            require(order >= 0) { "Question order must be non-negative" }
+            updates.add(SetTo(Question::order, order))
+        }
+
+        if (updates.isEmpty()) {
+            return question
+        }
+
+        updates.add(SetTo(Question::updatedAt, Clock.System.now()))
+
+        questionCollection.updateOneById(
+            id,
+            set(*updates.toTypedArray())
+        )
+
+        return questionCollection.findOneById(id)
+    }
+
+    /**
+     * Soft delete a question.
+     * User responses to deleted questions are preserved.
+     * @return true if deleted, false if not found
+     */
+    suspend fun softDeleteQuestion(id: ObjectId): Boolean {
+        val question = questionCollection.findOneById(id) ?: return false
+
+        questionCollection.updateOneById(
+            id,
+            set(
+                SetTo(Question::active, false),
+                SetTo(Question::updatedAt, Clock.System.now())
             )
-        ).firstOrNull()
+        )
+
+        return true
     }
 }

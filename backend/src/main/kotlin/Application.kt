@@ -6,12 +6,12 @@ import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.cors.routing.*
 import io.ktor.http.*
 import kotlinx.serialization.json.Json
-import com.mongodb.kotlin.client.coroutine.MongoClient
 import com.mongodb.MongoClientSettings
 import org.bson.codecs.configuration.CodecRegistries
 import config.CustomCodecProvider
-import services.QuestionSeeder
-import kotlinx.coroutines.runBlocking
+import org.litote.kmongo.coroutine.coroutine
+import org.litote.kmongo.reactivestreams.KMongo
+import plugins.configureAuthentication
 
 fun main() {
     embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = Application::module)
@@ -25,19 +25,11 @@ fun Application.module() {
         MongoClientSettings.getDefaultCodecRegistry()
     )
 
-    val mongoClient = MongoClient.create("mongodb://localhost:27017")
+    val mongoClient = KMongo.createClient("mongodb://localhost:27017").coroutine
     val database = mongoClient.getDatabase("howtoworkwithme")
-        .withCodecRegistry(codecRegistry)
 
-    // Seed questions on startup
-    runBlocking {
-        try {
-            val seeder = QuestionSeeder(database)
-            seeder.seedQuestions()
-        } catch (e: Exception) {
-            environment.log.error("Failed to seed questions: ${e.message}")
-        }
-    }
+    // Install authentication
+    configureAuthentication()
 
     // Install ContentNegotiation for JSON
     install(ContentNegotiation) {

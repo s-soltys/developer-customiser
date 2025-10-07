@@ -8,19 +8,16 @@ import org.bson.codecs.pojo.annotations.BsonId
 import org.bson.types.ObjectId
 
 /**
- * Question entity within a category.
- * Users answer questions to build their "How to Work With Me" profile.
+ * Category entity for grouping questions in the "How to Work With Me" questionnaire.
+ * Categories appear as sections in the user-facing questionnaire.
  */
 @Serializable
-data class Question(
+data class Category(
     @BsonId
     @Contextual
     val id: ObjectId = ObjectId(),
 
-    val text: String,
-
-    @Contextual
-    val categoryId: ObjectId,
+    val name: String,
 
     val order: Int,
 
@@ -33,8 +30,8 @@ data class Question(
     val updatedAt: Instant = Clock.System.now()
 ) {
     init {
-        require(text.isNotBlank()) { "Question text cannot be empty" }
-        require(text.length <= 500) { "Question text cannot exceed 500 characters" }
-        require(order >= 0) { "Question order must be non-negative" }
+        require(name.isNotBlank()) { "Category name cannot be empty" }
+        require(name.length <= 100) { "Category name cannot exceed 100 characters" }
+        require(order >= 0) { "Category order must be non-negative" }
     }
 }
