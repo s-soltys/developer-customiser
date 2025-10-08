@@ -26,7 +26,11 @@ fun Application.module() {
         MongoClientSettings.getDefaultCodecRegistry()
     )
 
-    val mongoClient = KMongo.createClient("mongodb://localhost:27017").coroutine
+    val clientSettings = MongoClientSettings.builder()
+        .codecRegistry(codecRegistry)
+        .build()
+
+    val mongoClient = KMongo.createClient(clientSettings).coroutine
     val database = mongoClient.getDatabase("howtoworkwithme")
 
     // Setup database indexes
@@ -47,6 +51,10 @@ fun Application.module() {
             prettyPrint = true
             isLenient = true
             ignoreUnknownKeys = true
+            serializersModule = kotlinx.serialization.modules.SerializersModule {
+                contextual(models.Category::class, models.CategorySerializer)
+                contextual(models.Question::class, models.QuestionSerializer)
+            }
         })
     }
 

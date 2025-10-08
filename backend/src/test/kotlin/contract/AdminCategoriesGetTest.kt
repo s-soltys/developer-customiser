@@ -8,10 +8,12 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
+import io.ktor.server.config.*
 import io.ktor.util.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
+import module
 
 /**
  * Contract tests for GET /api/admin/categories endpoint
@@ -21,6 +23,13 @@ class AdminCategoriesGetTest : StringSpec({
 
     "GET /api/admin/categories with valid auth should return 200 OK with array" {
         testApplication {
+            environment {
+                config = MapApplicationConfig("admin.password" to "test-password")
+            }
+            application {
+                module()
+            }
+
             val credentials = "admin:test-password".encodeBase64()
 
             val response = client.get("/api/admin/categories") {
@@ -28,7 +37,7 @@ class AdminCategoriesGetTest : StringSpec({
             }
 
             response.status shouldBe HttpStatusCode.OK
-            response.contentType() shouldBe ContentType.Application.Json
+            response.contentType()?.withoutParameters() shouldBe ContentType.Application.Json
 
             val json = Json.parseToJsonElement(response.bodyAsText())
             json.jsonArray // Should be an array
@@ -37,6 +46,10 @@ class AdminCategoriesGetTest : StringSpec({
 
     "GET /api/admin/categories without auth should return 401 Unauthorized" {
         testApplication {
+            application {
+                module()
+            }
+
             val response = client.get("/api/admin/categories")
 
             response.status shouldBe HttpStatusCode.Unauthorized
@@ -45,6 +58,13 @@ class AdminCategoriesGetTest : StringSpec({
 
     "GET /api/admin/categories with invalid auth should return 401 Unauthorized" {
         testApplication {
+            environment {
+                config = MapApplicationConfig("admin.password" to "test-password")
+            }
+            application {
+                module()
+            }
+
             val credentials = "admin:wrong-password".encodeBase64()
 
             val response = client.get("/api/admin/categories") {
@@ -57,6 +77,13 @@ class AdminCategoriesGetTest : StringSpec({
 
     "GET /api/admin/categories response should match Category schema" {
         testApplication {
+            environment {
+                config = MapApplicationConfig("admin.password" to "test-password")
+            }
+            application {
+                module()
+            }
+
             val credentials = "admin:test-password".encodeBase64()
 
             val response = client.get("/api/admin/categories") {

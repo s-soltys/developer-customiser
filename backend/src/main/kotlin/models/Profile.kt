@@ -66,33 +66,7 @@ data class Profile(
     }
 }
 
-// Custom serializer for kotlinx.datetime.Instant
-object InstantSerializer : KSerializer<Instant> {
-    override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("Instant", PrimitiveKind.STRING)
-
-    override fun serialize(encoder: Encoder, value: Instant) {
-        encoder.encodeString(value.toString())
-    }
-
-    override fun deserialize(decoder: Decoder): Instant {
-        return Instant.parse(decoder.decodeString())
-    }
-}
-
-// Custom serializer for ObjectId
-object ObjectIdSerializer : KSerializer<ObjectId> {
-    override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("ObjectId", PrimitiveKind.STRING)
-
-    override fun serialize(encoder: Encoder, value: ObjectId) {
-        encoder.encodeString(value.toHexString())
-    }
-
-    override fun deserialize(decoder: Decoder): ObjectId {
-        return ObjectId(decoder.decodeString())
-    }
-}
+// Serializers moved to models/Serializers.kt
 
 // Request DTOs
 @Serializable

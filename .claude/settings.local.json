@@ -16,7 +16,8 @@
       "Bash(xargs kill:*)",
       "Bash(export:*)",
       "Bash(npm install:*)",
-      "Bash(specs/002-create-a-backoffice/tasks.md)"
+      "Bash(specs/002-create-a-backoffice/tasks.md)",
+      "Bash(mongosh:*)"
     ],
     "deny": [],
     "ask": []

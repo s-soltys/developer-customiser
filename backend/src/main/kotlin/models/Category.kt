@@ -11,10 +11,8 @@ import org.bson.types.ObjectId
  * Category entity for grouping questions in the "How to Work With Me" questionnaire.
  * Categories appear as sections in the user-facing questionnaire.
  */
-@Serializable
 data class Category(
     @BsonId
-    @Contextual
     val id: ObjectId = ObjectId(),
 
     val name: String,
@@ -23,10 +21,8 @@ data class Category(
 
     val active: Boolean = true,
 
-    @Contextual
     val createdAt: Instant = Clock.System.now(),
 
-    @Contextual
     val updatedAt: Instant = Clock.System.now()
 ) {
     init {

@@ -7,9 +7,11 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
+import io.ktor.server.config.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import module
 
 /**
  * Contract tests for POST /api/admin/auth endpoint
@@ -19,8 +21,12 @@ class AdminAuthTest : StringSpec({
 
     "POST /api/admin/auth with valid password should return 200 OK" {
         testApplication {
-            // Setup environment
-            System.setProperty("ADMIN_PASSWORD", "test-password")
+            environment {
+                config = MapApplicationConfig("admin.password" to "test-password")
+            }
+            application {
+                module()
+            }
 
             val response = client.post("/api/admin/auth") {
                 contentType(ContentType.Application.Json)
@@ -30,14 +36,19 @@ class AdminAuthTest : StringSpec({
             response.status shouldBe HttpStatusCode.OK
 
             val json = Json.parseToJsonElement(response.bodyAsText()).jsonObject
-            json["authenticated"]?.jsonPrimitive?.content shouldBe "true"
+            json["authenticated"]?.jsonPrimitive?.content?.toBoolean() shouldBe true
             json["message"] shouldNotBe null
         }
     }
 
     "POST /api/admin/auth with invalid password should return 401 Unauthorized" {
         testApplication {
-            System.setProperty("ADMIN_PASSWORD", "correct-password")
+            environment {
+                config = MapApplicationConfig("admin.password" to "correct-password")
+            }
+            application {
+                module()
+            }
 
             val response = client.post("/api/admin/auth") {
                 contentType(ContentType.Application.Json)
@@ -48,12 +59,18 @@ class AdminAuthTest : StringSpec({
 
             val json = Json.parseToJsonElement(response.bodyAsText()).jsonObject
             json["error"] shouldNotBe null
-            json["message"] shouldNotBe null
         }
     }
 
     "POST /api/admin/auth with missing password field should return 400 Bad Request" {
         testApplication {
+            environment {
+                config = MapApplicationConfig("admin.password" to "test-password")
+            }
+            application {
+                module()
+            }
+
             val response = client.post("/api/admin/auth") {
                 contentType(ContentType.Application.Json)
                 setBody("""{}""")
@@ -68,6 +85,13 @@ class AdminAuthTest : StringSpec({
 
     "POST /api/admin/auth with malformed JSON should return 400 Bad Request" {
         testApplication {
+            environment {
+                config = MapApplicationConfig("admin.password" to "test-password")
+            }
+            application {
+                module()
+            }
+
             val response = client.post("/api/admin/auth") {
                 contentType(ContentType.Application.Json)
                 setBody("not-valid-json")

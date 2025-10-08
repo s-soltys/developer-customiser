@@ -7,10 +7,12 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
+import io.ktor.server.config.*
 import io.ktor.util.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import module
 
 /**
  * Contract tests for PUT /api/admin/categories/{id} endpoint
@@ -19,6 +21,13 @@ class AdminCategoriesUpdateTest : StringSpec({
 
     "PUT /api/admin/categories/{id} with valid update should return 200 OK" {
         testApplication {
+            environment {
+                config = MapApplicationConfig("admin.password" to "test-password")
+            }
+            application {
+                module()
+            }
+
             val credentials = "admin:test-password".encodeBase64()
             val categoryId = "507f1f77bcf86cd799439011" // Valid ObjectId format
 
@@ -35,6 +44,13 @@ class AdminCategoriesUpdateTest : StringSpec({
 
     "PUT /api/admin/categories/{id} with invalid ID should return 404 Not Found" {
         testApplication {
+            environment {
+                config = MapApplicationConfig("admin.password" to "test-password")
+            }
+            application {
+                module()
+            }
+
             val credentials = "admin:test-password".encodeBase64()
             val invalidId = "000000000000000000000000"
 
@@ -50,6 +66,13 @@ class AdminCategoriesUpdateTest : StringSpec({
 
     "PUT /api/admin/categories/{id} with empty name should return 400 Bad Request" {
         testApplication {
+            environment {
+                config = MapApplicationConfig("admin.password" to "test-password")
+            }
+            application {
+                module()
+            }
+
             val credentials = "admin:test-password".encodeBase64()
             val categoryId = "507f1f77bcf86cd799439011"
 
@@ -65,6 +88,13 @@ class AdminCategoriesUpdateTest : StringSpec({
 
     "PUT /api/admin/categories/{id} without auth should return 401 Unauthorized" {
         testApplication {
+            environment {
+                config = MapApplicationConfig("admin.password" to "test-password")
+            }
+            application {
+                module()
+            }
+
             val categoryId = "507f1f77bcf86cd799439011"
 
             val response = client.put("/api/admin/categories/$categoryId") {

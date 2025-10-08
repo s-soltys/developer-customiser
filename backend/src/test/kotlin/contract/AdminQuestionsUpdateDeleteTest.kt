@@ -5,7 +5,9 @@ import io.kotest.matchers.shouldBe
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
+import io.ktor.server.config.*
 import io.ktor.util.*
+import module
 
 /**
  * Contract tests for PUT & DELETE /api/admin/questions/{id} endpoints
@@ -14,6 +16,13 @@ class AdminQuestionsUpdateDeleteTest : StringSpec({
 
     "PUT /api/admin/questions/{id} with valid update should return 200 OK" {
         testApplication {
+            environment {
+                config = MapApplicationConfig("admin.password" to "test-password")
+            }
+            application {
+                module()
+            }
+
             val credentials = "admin:test-password".encodeBase64()
             val questionId = "507f191e810c19729de860ea"
 
@@ -30,6 +39,13 @@ class AdminQuestionsUpdateDeleteTest : StringSpec({
 
     "PUT /api/admin/questions/{id} with invalid ID should return 404 Not Found" {
         testApplication {
+            environment {
+                config = MapApplicationConfig("admin.password" to "test-password")
+            }
+            application {
+                module()
+            }
+
             val credentials = "admin:test-password".encodeBase64()
             val invalidId = "000000000000000000000000"
 
@@ -45,6 +61,13 @@ class AdminQuestionsUpdateDeleteTest : StringSpec({
 
     "PUT /api/admin/questions/{id} without auth should return 401 Unauthorized" {
         testApplication {
+            environment {
+                config = MapApplicationConfig("admin.password" to "test-password")
+            }
+            application {
+                module()
+            }
+
             val questionId = "507f191e810c19729de860ea"
 
             val response = client.put("/api/admin/questions/$questionId") {
@@ -58,6 +81,13 @@ class AdminQuestionsUpdateDeleteTest : StringSpec({
 
     "DELETE /api/admin/questions/{id} should return 204 No Content" {
         testApplication {
+            environment {
+                config = MapApplicationConfig("admin.password" to "test-password")
+            }
+            application {
+                module()
+            }
+
             val credentials = "admin:test-password".encodeBase64()
             val questionId = "507f191e810c19729de860ea"
 
@@ -72,6 +102,13 @@ class AdminQuestionsUpdateDeleteTest : StringSpec({
 
     "DELETE /api/admin/questions/{id} with invalid ID should return 404 Not Found" {
         testApplication {
+            environment {
+                config = MapApplicationConfig("admin.password" to "test-password")
+            }
+            application {
+                module()
+            }
+
             val credentials = "admin:test-password".encodeBase64()
             val invalidId = "000000000000000000000000"
 
@@ -85,6 +122,13 @@ class AdminQuestionsUpdateDeleteTest : StringSpec({
 
     "DELETE /api/admin/questions/{id} without auth should return 401 Unauthorized" {
         testApplication {
+            environment {
+                config = MapApplicationConfig("admin.password" to "test-password")
+            }
+            application {
+                module()
+            }
+
             val questionId = "507f191e810c19729de860ea"
 
             val response = client.delete("/api/admin/questions/$questionId")

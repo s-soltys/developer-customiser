@@ -7,10 +7,12 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
+import io.ktor.server.config.*
 import io.ktor.util.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import module
 
 /**
  * Contract tests for POST /api/admin/categories endpoint
@@ -20,6 +22,13 @@ class AdminCategoriesPostTest : StringSpec({
 
     "POST /api/admin/categories with valid request should return 201 Created" {
         testApplication {
+            environment {
+                config = MapApplicationConfig("admin.password" to "test-password")
+            }
+            application {
+                module()
+            }
+
             val credentials = "admin:test-password".encodeBase64()
 
             val response = client.post("/api/admin/categories") {
@@ -40,6 +49,13 @@ class AdminCategoriesPostTest : StringSpec({
 
     "POST /api/admin/categories with empty name should return 400 Bad Request" {
         testApplication {
+            environment {
+                config = MapApplicationConfig("admin.password" to "test-password")
+            }
+            application {
+                module()
+            }
+
             val credentials = "admin:test-password".encodeBase64()
 
             val response = client.post("/api/admin/categories") {
@@ -58,6 +74,13 @@ class AdminCategoriesPostTest : StringSpec({
 
     "POST /api/admin/categories with duplicate name should return 409 Conflict" {
         testApplication {
+            environment {
+                config = MapApplicationConfig("admin.password" to "test-password")
+            }
+            application {
+                module()
+            }
+
             val credentials = "admin:test-password".encodeBase64()
 
             // Create first category
@@ -83,6 +106,13 @@ class AdminCategoriesPostTest : StringSpec({
 
     "POST /api/admin/categories without auth should return 401 Unauthorized" {
         testApplication {
+            environment {
+                config = MapApplicationConfig("admin.password" to "test-password")
+            }
+            application {
+                module()
+            }
+
             val response = client.post("/api/admin/categories") {
                 contentType(ContentType.Application.Json)
                 setBody("""{"name": "Test", "order": 1}""")
@@ -94,6 +124,13 @@ class AdminCategoriesPostTest : StringSpec({
 
     "POST /api/admin/categories with missing required fields should return 400 Bad Request" {
         testApplication {
+            environment {
+                config = MapApplicationConfig("admin.password" to "test-password")
+            }
+            application {
+                module()
+            }
+
             val credentials = "admin:test-password".encodeBase64()
 
             val response = client.post("/api/admin/categories") {

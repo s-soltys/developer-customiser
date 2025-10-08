@@ -1,5 +1,8 @@
+import com.mongodb.MongoClientSettings
+import config.CustomCodecProvider
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
+import org.bson.codecs.configuration.CodecRegistries
 import org.bson.types.ObjectId
 import org.litote.kmongo.coroutine.coroutine
 import org.litote.kmongo.reactivestreams.KMongo
@@ -34,7 +37,19 @@ suspend fun seedDatabase() {
     val dbName = System.getenv("DB_NAME") ?: "howtoworkwithme"
 
     println("Connecting to MongoDB at: $mongoUri")
-    val client = KMongo.createClient(mongoUri).coroutine
+
+    // Use custom codecs for proper serialization
+    val codecRegistry = CodecRegistries.fromRegistries(
+        CodecRegistries.fromProviders(CustomCodecProvider()),
+        MongoClientSettings.getDefaultCodecRegistry()
+    )
+
+    val clientSettings = MongoClientSettings.builder()
+        .applyConnectionString(com.mongodb.ConnectionString(mongoUri))
+        .codecRegistry(codecRegistry)
+        .build()
+
+    val client = KMongo.createClient(clientSettings).coroutine
     val database = client.getDatabase(dbName)
     val categoryCollection = database.getCollection<Category>("categories")
 

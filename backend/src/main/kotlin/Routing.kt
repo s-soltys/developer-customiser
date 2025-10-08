@@ -18,7 +18,8 @@ fun Application.configureRouting(database: CoroutineDatabase) {
 
     routing {
         // Admin routes
-        adminRoutes(database)
+        this.adminRoutes(database)
+
         get("/") {
             call.respondText("How to Work With Me API - Server is running")
         }

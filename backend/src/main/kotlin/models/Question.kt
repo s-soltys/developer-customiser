@@ -11,25 +11,20 @@ import org.bson.types.ObjectId
  * Question entity within a category.
  * Users answer questions to build their "How to Work With Me" profile.
  */
-@Serializable
 data class Question(
     @BsonId
-    @Contextual
     val id: ObjectId = ObjectId(),
 
     val text: String,
 
-    @Contextual
     val categoryId: ObjectId,
 
     val order: Int,
 
     val active: Boolean = true,
 
-    @Contextual
     val createdAt: Instant = Clock.System.now(),
 
-    @Contextual
     val updatedAt: Instant = Clock.System.now()
 ) {
     init {

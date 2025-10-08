@@ -9,6 +9,7 @@ import org.bson.codecs.DecoderContext
 import org.bson.codecs.EncoderContext
 import org.bson.codecs.configuration.CodecProvider
 import org.bson.codecs.configuration.CodecRegistry
+import org.bson.types.ObjectId
 
 class InstantCodec : Codec<Instant> {
     override fun encode(writer: BsonWriter, value: Instant, encoderContext: EncoderContext) {
@@ -16,10 +17,30 @@ class InstantCodec : Codec<Instant> {
     }
 
     override fun decode(reader: BsonReader, decoderContext: DecoderContext): Instant {
-        return Instant.parse(reader.readString())
+        return when (reader.currentBsonType) {
+            BsonType.STRING -> Instant.parse(reader.readString())
+            BsonType.DATE_TIME -> Instant.fromEpochMilliseconds(reader.readDateTime())
+            else -> throw IllegalArgumentException("Unsupported BSON type for Instant: ${reader.currentBsonType}")
+        }
     }
 
     override fun getEncoderClass(): Class<Instant> = Instant::class.java
+}
+
+class ObjectIdCodec : Codec<ObjectId> {
+    override fun encode(writer: BsonWriter, value: ObjectId, encoderContext: EncoderContext) {
+        writer.writeObjectId(value)
+    }
+
+    override fun decode(reader: BsonReader, decoderContext: DecoderContext): ObjectId {
+        return when (reader.currentBsonType) {
+            BsonType.OBJECT_ID -> reader.readObjectId()
+            BsonType.STRING -> ObjectId(reader.readString())
+            else -> throw IllegalArgumentException("Unsupported BSON type for ObjectId: ${reader.currentBsonType}")
+        }
+    }
+
+    override fun getEncoderClass(): Class<ObjectId> = ObjectId::class.java
 }
 
 // Codec for response values that can be String or List<String>
@@ -61,6 +82,7 @@ class CustomCodecProvider : CodecProvider {
     override fun <T : Any?> get(clazz: Class<T>, registry: CodecRegistry): Codec<T>? {
         return when (clazz) {
             Instant::class.java -> InstantCodec() as Codec<T>
+            ObjectId::class.java -> ObjectIdCodec() as Codec<T>
             Any::class.java -> ResponseValueCodec() as Codec<T>
             java.lang.Object::class.java -> ResponseValueCodec() as Codec<T>
             else -> null

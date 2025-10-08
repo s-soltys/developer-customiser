@@ -7,10 +7,12 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
+import io.ktor.server.config.*
 import io.ktor.util.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
+import module
 
 /**
  * Contract tests for GET /api/admin/questions endpoint
@@ -19,6 +21,13 @@ class AdminQuestionsGetTest : StringSpec({
 
     "GET /api/admin/questions should return 200 OK with array" {
         testApplication {
+            environment {
+                config = MapApplicationConfig("admin.password" to "test-password")
+            }
+            application {
+                module()
+            }
+
             val credentials = "admin:test-password".encodeBase64()
 
             val response = client.get("/api/admin/questions") {
@@ -26,7 +35,7 @@ class AdminQuestionsGetTest : StringSpec({
             }
 
             response.status shouldBe HttpStatusCode.OK
-            response.contentType() shouldBe ContentType.Application.Json
+            response.contentType()?.withoutParameters() shouldBe ContentType.Application.Json
 
             val json = Json.parseToJsonElement(response.bodyAsText())
             json.jsonArray // Should be an array
@@ -35,6 +44,13 @@ class AdminQuestionsGetTest : StringSpec({
 
     "GET /api/admin/questions with categoryId filter should return 200 OK" {
         testApplication {
+            environment {
+                config = MapApplicationConfig("admin.password" to "test-password")
+            }
+            application {
+                module()
+            }
+
             val credentials = "admin:test-password".encodeBase64()
             val categoryId = "507f1f77bcf86cd799439011"
 
@@ -51,6 +67,13 @@ class AdminQuestionsGetTest : StringSpec({
 
     "GET /api/admin/questions without auth should return 401 Unauthorized" {
         testApplication {
+            environment {
+                config = MapApplicationConfig("admin.password" to "test-password")
+            }
+            application {
+                module()
+            }
+
             val response = client.get("/api/admin/questions")
 
             response.status shouldBe HttpStatusCode.Unauthorized
@@ -59,6 +82,13 @@ class AdminQuestionsGetTest : StringSpec({
 
     "GET /api/admin/questions response should match Question schema" {
         testApplication {
+            environment {
+                config = MapApplicationConfig("admin.password" to "test-password")
+            }
+            application {
+                module()
+            }
+
             val credentials = "admin:test-password".encodeBase64()
 
             val response = client.get("/api/admin/questions") {
