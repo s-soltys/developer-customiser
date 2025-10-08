@@ -12,6 +12,7 @@ import config.CustomCodecProvider
 import org.litote.kmongo.coroutine.coroutine
 import org.litote.kmongo.reactivestreams.KMongo
 import plugins.configureAuthentication
+import kotlinx.coroutines.runBlocking
 
 fun main() {
     embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = Application::module)
@@ -27,6 +28,15 @@ fun Application.module() {
 
     val mongoClient = KMongo.createClient("mongodb://localhost:27017").coroutine
     val database = mongoClient.getDatabase("howtoworkwithme")
+
+    // Setup database indexes
+    runBlocking {
+        try {
+            setupDatabase(database)
+        } catch (e: Exception) {
+            environment.log.error("Failed to setup database: ${e.message}")
+        }
+    }
 
     // Install authentication
     configureAuthentication()

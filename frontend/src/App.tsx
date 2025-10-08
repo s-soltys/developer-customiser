@@ -4,6 +4,7 @@ import { NameEntry } from './pages/NameEntry'
 import { Questionnaire } from './pages/Questionnaire'
 import { Summary } from './pages/Summary'
 import { ProfileView } from './pages/ProfileView'
+import { AdminDashboard } from './pages/admin/AdminDashboard'
 
 const router = createBrowserRouter([
   {
@@ -21,6 +22,10 @@ const router = createBrowserRouter([
   {
     path: '/share/:shareableId',
     element: <ProfileView />,
+  },
+  {
+    path: '/admin',
+    element: <AdminDashboard />,
   },
 ])
 

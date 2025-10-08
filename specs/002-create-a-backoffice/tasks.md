@@ -600,7 +600,7 @@ Modify existing public questions endpoint:
 
 ### Frontend Hooks
 
-#### T035 [P]: Implement useAdminAuth Hook
+#### T035 [P]: Implement useAdminAuth Hook [X]
 **File**: `frontend/src/hooks/admin/useAdminAuth.ts`
 
 Create authentication hook:
@@ -615,7 +615,7 @@ Create authentication hook:
 
 ---
 
-#### T036 [P]: Implement useCategories Hook
+#### T036 [P]: Implement useCategories Hook [X]
 **File**: `frontend/src/hooks/admin/useCategories.ts`
 
 Create React Query hooks:
@@ -631,7 +631,7 @@ Create React Query hooks:
 
 ---
 
-#### T037 [P]: Implement useQuestions Hook
+#### T037 [P]: Implement useQuestions Hook [X]
 **File**: `frontend/src/hooks/admin/useQuestions.ts`
 
 Create React Query hooks:
@@ -649,7 +649,7 @@ Create React Query hooks:
 
 ### Frontend Components
 
-#### T038 [P]: Implement AdminAuth Component
+#### T038 [P]: Implement AdminAuth Component [X]
 **File**: `frontend/src/components/admin/AdminAuth.tsx`
 
 Create login component:
@@ -664,7 +664,7 @@ Create login component:
 
 ---
 
-#### T039 [P]: Implement CategoryList & CategoryForm Components
+#### T039 [P]: Implement CategoryList & CategoryForm Components [X]
 **File**: `frontend/src/components/admin/CategoryList.tsx` and `CategoryForm.tsx`
 
 Create category management components:
@@ -681,7 +681,7 @@ Use useCategories hook for data and mutations
 
 ---
 
-#### T040 [P]: Implement QuestionList & QuestionForm Components with Drag-and-Drop
+#### T040 [P]: Implement QuestionList & QuestionForm Components with Drag-and-Drop [X]
 **File**: `frontend/src/components/admin/QuestionList.tsx` and `QuestionForm.tsx`
 
 Create question management components:
@@ -701,7 +701,7 @@ Use useQuestions hook for data and mutations
 
 ### Frontend Pages & Routing
 
-#### T041: Implement AdminDashboard Page & Admin Routes
+#### T041: Implement AdminDashboard Page & Admin Routes [X]
 **File**: `frontend/src/pages/AdminDashboard.tsx` and `frontend/src/App.tsx`
 
 Create admin dashboard page:
@@ -722,7 +722,7 @@ Route protection: Redirect to login if not authenticated (use useAdminAuth)
 
 ## Phase 3.4: Integration & Polish
 
-#### T042 [P]: Create MongoDB Indexes
+#### T042 [P]: Create MongoDB Indexes [X]
 **File**: `backend/src/main/kotlin/DatabaseSetup.kt`
 
 Create indexes per data-model.md:
