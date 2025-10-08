@@ -25,7 +25,9 @@ fun Route.adminRoutes(database: CoroutineDatabase) {
     post("/api/admin/auth") {
         try {
             val request = call.receive<AuthRequest>()
-            val expectedPassword = System.getenv("ADMIN_PASSWORD") ?: "change-me-in-production"
+            val expectedPassword = call.application.environment.config.propertyOrNull("admin.password")?.getString()
+                ?: System.getenv("ADMIN_PASSWORD")
+                ?: "change-me-in-production"
 
             if (request.password == expectedPassword) {
                 call.respond(HttpStatusCode.OK, AuthResponse(authenticated = true, message = "Authentication successful"))
